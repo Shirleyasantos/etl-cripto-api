@@ -4,11 +4,13 @@ from sqlalchemy import create_engine
 from datetime import datetime
 
 def extrair_dados():
+    """Extrai dados da API da CoinGecko"""
     url = "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd"
     resposta = requests.get(url)
     return resposta.json()
 
 def transformar_dados(dados_brutos):
+    """Transforma o JSON em um DataFrame organizado"""
     preco_btc = dados_brutos['bitcoin']['usd']
     preco_eth = dados_brutos['ethereum']['usd']
     
@@ -22,12 +24,19 @@ def transformar_dados(dados_brutos):
     return df
 
 def carregar_dados(df):
+    """Salva os dados em um banco de dados SQLite"""
     engine = create_engine('sqlite:///crypto_data.db')
     df.to_sql('precos_cripto', con=engine, if_exists='append', index=False)
 
 if __name__ == "__main__":
-    print("Iniciando a pipeline...")
+    # Fluxo principal da Pipeline
+    print("Iniciando a extração...")
     dados = extrair_dados()
+    
+    print("Iniciando a transformação...")
     df_limpo = transformar_dados(dados)
+    
+    print("Carregando dados no banco...")
     carregar_dados(df_limpo)
-    print("Dados processados e salvos com sucesso!")
+    
+    print("Pipeline finalizada com sucesso!")
